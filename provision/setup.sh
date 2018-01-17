@@ -4,7 +4,7 @@ logFile=/tmp/provision.log
 
 echo "Installing MySQL Server" > $logFile
 echo "-----------------------------------------------" >> $logFile
-
+sudo apt-get update
 sudo apt-get install mariadb-server -y >> $logFile
 
 sqlscript="/tmp/tmp.sql"
@@ -35,8 +35,8 @@ echo "Installing Ruby" > $logFile
 echo "-----------------------------------------------" >> $logFile
 
 rvm info >> $logFile
-rvm install 2.2 >> $logFile
-rvm --default 2.2 >> $logFile
+rvm install 2.4 >> $logFile
+rvm --default 2.4 >> $logFile
 
 ## Get CBRAIN Code
 

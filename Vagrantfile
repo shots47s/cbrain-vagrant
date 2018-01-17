@@ -12,14 +12,25 @@ Vagrant.configure(2) do |config|
   # config.vm.network "public_network"
   # config.vm.synced_folder "../data", "/vagrant_data"
 
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
+  required_plugins = %w( vagrant-vbguest vagrant-disksize )
+  _retry = false
+  required_plugins.each do |plugin|
+    unless Vagrant.has_plugin? plugin
+      system "vagrant plugin install #{plugin}"
+      _retry=true
+    end
+  end
+
+  if (_retry)
+      exec "vagrant " + ARGV.join(' ')
+  end 
+   
+  config.disksize.size="20GB"
+
+  config.vm.provider "virtualbox" do |vb|
+     vb.memory = "8129"
+  end
+
   # View the documentation for the provider you are using for more
   # information on available options.
 
