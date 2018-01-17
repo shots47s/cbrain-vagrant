@@ -85,4 +85,10 @@ rake db:seed RAILS_ENV=development | grep "admin password" > /tmp/cbinit.txt
 echo "Running Sanity Checks" >> $logFile
 rake db:sanity:check RAILS_ENV=development
 
+cd $HOME/cbrain/BrainPortal
+rake cbrain:plugins:install:all
 
+cd $HOME/cbrain/Bourreau
+rake cbrain:plugins:install:all
+
+mkdir $HOME/BPCache
