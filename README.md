@@ -11,3 +11,6 @@ To use:
 1. cd cbrain/BrainPortal
 1. type 'rails server puma -b 0.0.0.0 -p 3000 -e development'
 1. go to your local browser and type in the address '127.0.0.1:3000' and you should see the CBRAIN login page.
+
+
+Note the VagrantFile is using the new plugin interface, if would like to change the resources allocated to the Vagrant, you can set the diskspace and memory requirements there, it is currently set to use 8GB of RAM and 20GB of disk space.
