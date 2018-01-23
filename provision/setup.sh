@@ -29,7 +29,7 @@ cd $HOME
 \curl -sSL https://rvm.io/mpapis.asc | gpg --import - >> $logFile
 \curl -sSL https://get.rvm.io | bash -s stable >> $logFile
 
-source /home/ubuntu/.rvm/scripts/rvm >> $logFile
+source $HOME/.rvm/scripts/rvm >> $logFile
 
 echo "Installing Ruby" > $logFile
 echo "-----------------------------------------------" >> $logFile
