@@ -64,7 +64,7 @@ sed 's/cbrain_db_name_here/cbrain_db/g' database.yml.TEMPLATE | sed 's/cbrain_db
 
 ## install bundler
 
-gem install bundler > $logFile
+gem install bundler >> $logFile
 cd $HOME/cbrain/BrainPortal; bundle install >> $logFile
 cd $HOME/cbrain/Bourreau; bundle install >> $logFile
 
@@ -83,12 +83,42 @@ rake db:schema:load RAILS_ENV=development >> $logFile
 rake db:seed RAILS_ENV=development | grep "admin password" > /tmp/cbinit.txt
 
 echo "Running Sanity Checks" >> $logFile
-rake db:sanity:check RAILS_ENV=development
+rake db:sanity:check RAILS_ENV=development >> $logFile
 
-cd $HOME/cbrain/BrainPortal
-rake cbrain:plugins:install:all
+cd $HOME/cbrain/BrainPortal >> $logFile
+rake cbrain:plugins:install:all >> $logFile
 
-cd $HOME/cbrain/Bourreau
-rake cbrain:plugins:install:all
+cd $HOME/cbrain/Bourreau >> $logFile
+rake cbrain:plugins:install:all >> $logFile
 
+### Make local directories for Caching and DP
 mkdir $HOME/BPCache
+mkdir $HOME/BorCache
+mkdir $HOME/BorWork
+mkdir $HOME/LocalDP
+
+### install docker 
+
+dockerLog=/tmp/docker-install.log
+sudo apt-get install docker.io -y > $dockerLog
+sudo usermod -a -G docker ubuntu >> $dockerLog
+
+## install singularity
+singLog=/tmp/singularity.log
+
+mkdir $HOME/singTemp; cd $HOME/singTemp
+sudo apt-get install python dh-autoreconf build-essential -y > $singLog 
+wget https://github.com/singularityware/singularity/releases/download/2.4.1/singularity-2.4.1.tar.gz >> $singLog
+tar -xvzf singularity-2.4.1.tar.gz >> $singLog
+cd singularity-2.4.1
+./configure --prefix=/usr/local --sysconfdir=/etc >> $singLog
+make >> $singLog
+sudo make install >> $singLog
+
+cd $HOME
+rm -rf $HOME/singTemp
+
+
+
+
+
