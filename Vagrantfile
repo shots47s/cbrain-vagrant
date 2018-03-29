@@ -25,29 +25,34 @@ Vagrant.configure(2) do |config|
       exec "vagrant " + ARGV.join(' ')
   end 
    
-  config.disksize.size="20GB"
+  config.disksize.size="10GB"
 
   config.vm.provider "virtualbox" do |vb|
      vb.memory = "8129"
   end
 
+  ## Set the timezone that you are in here
+  require 'time'
+  timezonetmp = (-1*((Time.zone_offset(Time.now.zone)/60)/60))
+  timezone = timezonetmp >- 1 ? "Etc/GMT+" + timezonetmp.to_s : "Etc/GMT" + timezonetmp.to_s 
+  config.vm.provision :shell, privileged: true, run: "always", inline: <<-SHELL
+      apt-get install ntp -y
+      sudo timedatectl set-timezone #{timezone}
+      sudo service ntp restart
+  SHELL
+  
   # View the documentation for the provider you are using for more
   # information on available options.
 
-
-  # config.vm.provision "shell", inline: <<-SHELL
-  #   sudo apt-get update
-  #   sudo apt-get install -y apache2
-  # SHELL
   config.vm.provision "fix-no-tty", type: "shell" do |s|
     s.privileged = false
     s.path = "provision/setup.sh"
   end
 
-  config.vm.provision "shell", privileged: false, run: "always", inline: <<-SHELL
-    cd ~/cbrain/BrainPortal
-    cat /tmp/cbinit.txt
-    rails server thin -e development -p 3000 > ~/cbrain.log &
-  SHELL
+#  config.vm.provision "shell", privileged: false, run: "always", inline: <<-SHELL
+#    cd ~/cbrain/BrainPortal
+#    cat /tmp/cbinit.txt
+#    rails server thin -e development -p 3000 > ~/cbrain.log &
+#  SHELL
   
 end

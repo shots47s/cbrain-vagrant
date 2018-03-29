@@ -95,7 +95,9 @@ rake cbrain:plugins:install:all >> $logFile
 mkdir $HOME/BPCache
 mkdir $HOME/BorCache
 mkdir $HOME/BorWork
-mkdir $HOME/LocalDP
+mkdir $HOME/FlatLocalDP
+mkdir $HOME/SshDP
+mkdir $HOME/CBLocalDP
 
 ### install docker 
 
@@ -118,7 +120,21 @@ sudo make install >> $singLog
 cd $HOME
 rm -rf $HOME/singTemp
 
+#### Set up the BrainPortal Cache and timezone
+cd $HOME/cbrain/BrainPortal
 
+echo $HOME | xargs -I {} echo 'p=RemoteResource.first; p.dp_cache_dir="{}/BorCache"; p.save' | rails c >> $logFile
+timezone=`timedatectl status | grep 'Time zone' | awk '{print $3}'`
+echo 'p=User.first; p.time_zone = "$timezone"; p.save' | rails c >> $logFile
 
+### Setup local DataProvider
 
+echo $HOME | xargs -I {} echo 'DataProvider.create :id => 2, :name => "LocalDP", :type => "FlatDirLocalDataProvider", :remote_dir => "{}/FlatLocalDP", :time_zone => $timezone, :description => "Automatically Generated Local Data Provider", :user_id => 1, :group_id => 1, :online => 1' | rails c >> $logFile
+
+cat ~/.ssh/id_cbrain_portal.pub >> ~/.ssh/authorized_keys
+echo $HOME | xargs -I {} echo 'DataProvider.create :id => 3, :name => "SshDP", :type => "FlatDirSshDataProvider", :remote_dir => "{}/SshDP", :time_zone => $timezone, :description => "Automatically Generated SSH Data Provider", :user_id => 1, :group_id => 1, :online => 1' | rails c >> $logFile
+echo $USER | xargs -I {} echo 'd=DataProvider.where("id=3").first; d.remote_user = "{}"; d.remote_host = "localhost"; d.remote_port = 22; d.save' | rails c >> $logFile
+
+echo $HOME | xargs -I {} echo 'DataProvider.create :id => 4, :name => "CbrainDP", :type => "EnCbrainSmartDataProvider", :remote_dir => "{}/CBLocalDP", :time_zone => $timezone, :description => "Automatically Generated Smart Data Provider", :user_id => 1, :group_id => 1, :online => 1' | rails c >> $logFile
+echo $USER | xargs -I {} echo 'd=DataProvider.where("id=4").first; d.remote_user = "{}"; d.remote_host = "localhost"; d.remote_port = 22; d.save' | rails c >> $logFile
 
