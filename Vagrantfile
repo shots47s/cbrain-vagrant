@@ -49,10 +49,9 @@ Vagrant.configure(2) do |config|
     s.path = "provision/setup.sh"
   end
 
-#  config.vm.provision "shell", privileged: false, run: "always", inline: <<-SHELL
-#    cd ~/cbrain/BrainPortal
-#    cat /tmp/cbinit.txt
+  config.vm.provision "shell", privileged: false, run: "always", inline: <<-SHELL
+    cd ~/cbrain/BrainPortal
+    cat /tmp/cbinit.txt
 #    rails server thin -e development -p 3000 > ~/cbrain.log &
-#  SHELL
-  
+  SHELL
 end
