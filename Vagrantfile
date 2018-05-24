@@ -51,6 +51,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision "shell", privileged: false, run: "always", inline: <<-SHELL
     cd ~/cbrain/BrainPortal
+    echo "Please login in to the portal for the first time as user 'admin'"
     cat /tmp/cbinit.txt
 #    rails server thin -e development -p 3000 > ~/cbrain.log &
   SHELL
