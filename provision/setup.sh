@@ -27,7 +27,7 @@ echo "-----------------------------------------------" >> $logFile
 
 cd $HOME
 
-apt-get install libsodium-dev gnupg2 -y
+sudo apt-get install curl libsodium-dev gnupg2 -y
 gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 # \curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - >> $logFile
 \curl -sSL https://get.rvm.io | bash -s stable >> $logFile
@@ -114,27 +114,15 @@ dockerLog=/tmp/docker-install.log
 sudo apt-get install docker.io -y > $dockerLog
 sudo usermod -a -G docker ubuntu >> $dockerLog
 
-## install singularity
-singLog=/tmp/singularity.log
-
-mkdir $HOME/singTemp; cd $HOME/singTemp
-sudo apt-get install python dh-autoreconf build-essential -y > $singLog
-wget https://github.com/singularityware/singularity/releases/download/2.4.1/singularity-2.4.1.tar.gz >> $singLog
-tar -xvzf singularity-2.4.1.tar.gz >> $singLog
-cd singularity-2.4.1
-./configure --prefix=/usr/local --sysconfdir=/etc >> $singLog
-make >> $singLog
-sudo make install >> $singLog
-
 cd $HOME
-rm -rf $HOME/singTemp
+
 
 #### Set up the BrainPortal Cache and timezone
 cd $HOME/cbrain/BrainPortal
 
 echo $HOME | xargs -I {} echo 'p=RemoteResource.first; p.dp_cache_dir="{}/BPCache"; p.save' | rails c >> $logFile
 timezone=`timedatectl status | grep 'Time zone' | awk '{print $3}'`
-echo $timezone | xargs -I {} echo 'p=User.first; p.time_zone = "{}"; p.save' | rails c >> $logFile
+echo $timezne | xargs -I {} echo 'p=User.first; p.time_zone = "{}"; p.save' | rails c >> $logFile
 
 ### Setup local DataProvider
 
