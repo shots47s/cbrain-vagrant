@@ -26,7 +26,10 @@ echo "Installing Ruby Version Manager" >> $logFile
 echo "-----------------------------------------------" >> $logFile
 
 cd $HOME
-\curl -sSL https://rvm.io/mpapis.asc | gpg --import - >> $logFile
+
+sudo apt-get install curl libsodium-dev gnupg2 -y
+gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+# \curl -sSL https://rvm.io/pkuczynski.asc | gpg --import - >> $logFile
 \curl -sSL https://get.rvm.io | bash -s stable >> $logFile
 
 source $HOME/.rvm/scripts/rvm >> $logFile
@@ -35,8 +38,8 @@ echo "Installing Ruby" > $logFile
 echo "-----------------------------------------------" >> $logFile
 
 rvm info >> $logFile
-rvm install 2.4 >> $logFile
-rvm --default 2.4 >> $logFile
+rvm install 2.6 >> $logFile
+rvm --default 2.6 >> $logFile
 
 ## Get CBRAIN Code
 
@@ -54,6 +57,9 @@ echo "-----------------------------------------------" >> $logFile
 sudo apt-get install libmysqlclient-dev -y >> $logFile
 sudo apt-get install libxml2 libxml2-dev -y >> $logFile
 sudo apt-get install libxslt1.1 -y >> $logFile
+sudo apt-get install libsodium-dev -y >> $logFile
+sudo apt-get install libcurl4-openssl-dev -y >>  $logFile
+
 
 ## create database.yml file
 
@@ -102,33 +108,21 @@ mkdir $HOME/FlatLocalDP
 mkdir $HOME/SshDP
 mkdir $HOME/CBLocalDP
 
-### install docker 
+### install docker
 
 dockerLog=/tmp/docker-install.log
 sudo apt-get install docker.io -y > $dockerLog
 sudo usermod -a -G docker ubuntu >> $dockerLog
 
-## install singularity
-singLog=/tmp/singularity.log
-
-mkdir $HOME/singTemp; cd $HOME/singTemp
-sudo apt-get install python dh-autoreconf build-essential -y > $singLog 
-wget https://github.com/singularityware/singularity/releases/download/2.4.1/singularity-2.4.1.tar.gz >> $singLog
-tar -xvzf singularity-2.4.1.tar.gz >> $singLog
-cd singularity-2.4.1
-./configure --prefix=/usr/local --sysconfdir=/etc >> $singLog
-make >> $singLog
-sudo make install >> $singLog
-
 cd $HOME
-rm -rf $HOME/singTemp
+
 
 #### Set up the BrainPortal Cache and timezone
 cd $HOME/cbrain/BrainPortal
 
 echo $HOME | xargs -I {} echo 'p=RemoteResource.first; p.dp_cache_dir="{}/BPCache"; p.save' | rails c >> $logFile
 timezone=`timedatectl status | grep 'Time zone' | awk '{print $3}'`
-echo $timezone | xargs -I {} echo 'p=User.first; p.time_zone = "{}"; p.save' | rails c >> $logFile
+echo $timezne | xargs -I {} echo 'p=User.first; p.time_zone = "{}"; p.save' | rails c >> $logFile
 
 ### Setup local DataProvider
 
@@ -149,7 +143,7 @@ echo $timezone | xargs -I {} echo 'd=DataProvider.where("id=4").first; d.time_zo
 # Make sure you can see bundle at login
 cd $HOME
 echo 'export PATH="$PATH:$HOME/.rvm/bin"' > .tmpbashrc
-echo  '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"' >> .tmpbashrc 
+echo  '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"' >> .tmpbashrc
 cat .bashrc >> .tmpbashrc
 cp .bashrc .bashrc.old
 mv .tmpbashrc .bashrc
@@ -159,4 +153,4 @@ cd $HOME/cbrain/BrainPortal
 
 echo $HOME | xargs -I {} echo 'RemoteResource.create :id => 2, :name => "LocalBourreau", :type => "Bourreau", :user_id => 1, :group_id => 1, :online => 1, :description => "Automatically Generated Local Bourreau", :ssh_control_host => "localhost", :ssh_control_port => 22, :ssh_control_rails_dir => "{}/cbrain/Bourreau", :tunnel_mysql_port => 3333, :tunnel_actres_port => 3334, :dp_cache_dir => "{}/BorCache", :workers_instances=> 3, :workers_chk_time => 5, :workers_log_to => "combined", :workers_verbose => 1, :read_only => 0, :portal_locked => 0, :cache_trust_expire => 2592000, :cms_class => "ScirUnix", :cms_shared_dir => "{}/BorWork", :docker_executable_name => "docker", :singularity_executable_name => "singularity"' | rails c >> $logFile
 echo $USER | xargs -I {} echo 'p=RemoteResource.where("id=2").first; p.ssh_control_user = "{}"; p.save' | rails c >> $logFile
-echo $timezone | xargs -I {} echo 'p=RemoteResource.where("id=2").first; p.time_zone = "{}"; p.save' | rails c >> $logFile 
+echo $timezone | xargs -I {} echo 'p=RemoteResource.where("id=2").first; p.time_zone = "{}"; p.save' | rails c >> $logFile
