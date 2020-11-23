@@ -25,7 +25,7 @@ Vagrant.configure(2) do |config|
       exec "vagrant " + ARGV.join(' ')
   end 
    
-  config.disksize.size="400GB"
+  config.disksize.size="10MB"
 
   config.vm.provider "virtualbox" do |vb|
      vb.memory = "8129"
@@ -53,6 +53,6 @@ Vagrant.configure(2) do |config|
     cd ~/cbrain/BrainPortal
     echo "Please login in to the portal for the first time as user 'admin'"
     cat /tmp/cbinit.txt
-#    rails server thin -e development -p 3000 > ~/cbrain.log &
+#    rails server puma -e development -p 3000 -b 0.0.0.0> ~/cbrain.log &
   SHELL
 end
