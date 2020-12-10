@@ -10,6 +10,7 @@ The Vagrant provisions an image to provide you with the following components:
 To use:
 1. vagrant up (will provision)
 1. at the end of the provision process, the temporary CBRAIN password will be displayed in the log
+1. if failed due to on rmv intall due rsa key issue destroy vagrant an try previous steps latter
 1. vagrant ssh
 1. cd cbrain/BrainPortal
 1. type 'rails server puma -b 0.0.0.0 -p 3000 -e development'
