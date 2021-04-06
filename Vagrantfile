@@ -25,7 +25,7 @@ Vagrant.configure(2) do |config|
       exec "vagrant " + ARGV.join(' ')
   end 
    
-  config.disksize.size="10MB"
+  config.disksize.size="20GB"
 
   config.vm.provider "virtualbox" do |vb|
      vb.memory = "8129"
