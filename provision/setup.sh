@@ -4,7 +4,9 @@ logFile=/tmp/provision.log
 
 echo "Installing MySQL Server" > $logFile
 echo "-----------------------------------------------" >> $logFile
-sudo apt-get update
+sudo apt-get update >> $logFile
+sudo apt-get install -y software-properties-common >> $logFile
+
 sudo apt-get install mariadb-server -y >> $logFile
 
 sqlscript="/tmp/tmp.sql"
@@ -20,6 +22,22 @@ echo "FLUSH PRIVILEGES;" >> $sqlscript
 
 cat $sqlscript | sudo mysql -u root >> $logFile
 
+
+echo "Installing Apptainer" > $logFile
+echo "-----------------------------------------------" >> $logFile
+
+
+
+# For the non-setuid installation use these commands:
+
+sudo add-apt-repository -y ppa:apptainer/ppa
+sudo apt-get update >> $logFile
+sudo apt-get install -y apptainer >> $logFile
+
+# For the setuid installation uncomment these:
+# sudo apt install -y apptainer-suid
+
+
 ### Installing Ruby Version Manager
 
 echo "Installing Ruby Version Manager" >> $logFile
@@ -27,20 +45,47 @@ echo "-----------------------------------------------" >> $logFile
 
 cd $HOME
 
-sudo apt-get install curl libsodium-dev gnupg2 -y
-gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB >> $logfile
-command curl -ksSL https://rvm.io/mpapis.asc | gpg2 --import - >> $logfile
-command curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import - >> $logFile
-\curl -sSL https://get.rvm.io | bash -s stable >> $logFile
+sudo apt-get install curl libsodium-dev gnupg2 -y >> $logFile
+gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB >> $logFile
 
-source $HOME/.rvm/scripts/rvm >> $logFile
 
-echo "Installing Ruby" > $logFile
+sudo apt-add-repository -y ppa:rael-gc/rvm >> $logFile
+sudo apt-get update >> $logFile
+
+
+sudo apt-get install -y rvm >> $logFile
+
+sudo usermod -a -G rvm $USER >>$logFile
+
+# command curl -ksSL https://rvm.io/mpapis.asc | gpg2 --import - >> $logfile
+# command curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import - >> $logFile
+# \curl -sSL https://get.rvm.io | bash -s stable >> $logFile
+
+source  /usr/share/rvm/scripts/rvm >> $logFile
+
+echo "Installing Ruby" >> $logFile
 echo "-----------------------------------------------" >> $logFile
+echo "rmv info" >> $logFile
 
 rvm info >> $logFile
-rvm install 2.6 >> $logFile
-rvm --default 2.6 >> $logFile
+
+echo "openssl pkg install" >> $logFile
+
+
+
+echo "export rvm_max_time_flag=20" >> ~/.rvmrc
+rvm fix-permissions system
+rvm fix-permissions user
+
+
+rvm pkg install openssl >> $logFile
+
+
+
+
+rvm install ruby-2.7.2 --with-openssl-dir=/usr/share/rvm/usr  >> $logFile
+
+rvm --default 2.7.2 >> $logFile
 
 ## Get CBRAIN Code
 
@@ -55,7 +100,8 @@ git clone https://github.com/aces/cbrain.git >> $logFile
 echo "Installing additional packages" >> $logFile
 echo "-----------------------------------------------" >> $logFile
 
-sudo apt-get install libmysqlclient-dev -y >> $logFile
+sudo apt-get install libmariadb-dev-compat libmariadb-dev >> $logFile
+#sudo apt-get install libmysqlclient-dev -y >> $logFile
 sudo apt-get install libxml2 libxml2-dev -y >> $logFile
 sudo apt-get install libxslt1.1 -y >> $logFile
 sudo apt-get install libsodium-dev -y >> $logFile
@@ -109,11 +155,6 @@ mkdir $HOME/FlatLocalDP
 mkdir $HOME/SshDP
 mkdir $HOME/CBLocalDP
 
-### install docker
-
-dockerLog=/tmp/docker-install.log
-sudo apt-get install docker.io -y > $dockerLog
-sudo usermod -a -G docker ubuntu >> $dockerLog
 
 cd $HOME
 
@@ -130,7 +171,7 @@ echo $timezne | xargs -I {} echo 'p=User.first; p.time_zone = "{}"; p.save' | ra
 echo $HOME | xargs -I {} echo 'DataProvider.create :id => 2, :name => "LocalDP", :type => "FlatDirLocalDataProvider", :remote_dir => "{}/FlatLocalDP", :description => "Automatically Generated Local Data Provider", :user_id => 1, :group_id => 1, :online => 1' | rails c >> $logFile
 echo $timezone | xargs -I {} echo 'd=DataProvider.where("id=2").first; d.time_zone = "{}"; d.save' | rails c >> $logFile
 
-cat ~/.ssh/id_cbrain_portal.pub >> ~/.ssh/authorized_keys
+cat ~/.ssh/id_cbrain_ed25519.pub >> ~/.ssh/authorized_keys
 echo $HOME | xargs -I {} echo 'DataProvider.create :id => 3, :name => "SshDP", :type => "FlatDirSshDataProvider", :remote_dir => "{}/SshDP", :description => "Automatically Generated SSH Data Provider", :user_id => 1, :group_id => 1, :online => 1' | rails c >> $logFile
 echo $timezone | xargs -I {} echo 'd=DataProvider.where("id=3").first; d.time_zone = "{}"; d.save' | rails c >> $logFile
 echo $USER | xargs -I {} echo 'd=DataProvider.where("id=3").first; d.remote_user = "{}"; d.remote_host = "localhost"; d.remote_port = 22; d.save' | rails c >> $logFile
@@ -143,8 +184,8 @@ echo $timezone | xargs -I {} echo 'd=DataProvider.where("id=4").first; d.time_zo
 
 # Make sure you can see bundle at login
 cd $HOME
-echo 'export PATH="$PATH:$HOME/.rvm/bin"' > .tmpbashrc
-echo  '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"' >> .tmpbashrc
+echo 'export PATH="$PATH:/usr/share/rvm/bin"' > .tmpbashrc
+echo  '[[ -s "/usr/share/rvm/scripts/rvm" ]] && source "/usr/share/rvm/scripts/rvm"' >> .tmpbashrc
 cat .bashrc >> .tmpbashrc
 cp .bashrc .bashrc.old
 mv .tmpbashrc .bashrc
