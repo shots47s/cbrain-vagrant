@@ -164,7 +164,7 @@ cd $HOME/cbrain/BrainPortal
 
 echo $HOME | xargs -I {} echo 'p=RemoteResource.first; p.dp_cache_dir="{}/BPCache"; p.save' | rails c >> $logFile
 timezone=`timedatectl status | grep 'Time zone' | awk '{print $3}'`
-echo $timezne | xargs -I {} echo 'p=User.first; p.time_zone = "{}"; p.save' | rails c >> $logFile
+echo $timezone | xargs -I {} echo 'p=User.first; p.time_zone = "{}"; p.save' | rails c >> $logFile
 
 ### Setup local DataProvider
 
